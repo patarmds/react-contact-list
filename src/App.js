@@ -3,6 +3,8 @@ import { Container, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import List from './List';
+import ModalUpdate from './ModalUpdate';
+import ModalDelete from './ModalDelete';
 
 function App() {
   
@@ -10,11 +12,13 @@ function App() {
 
   const [datas, setDatas] = useState([
     {
+      id : 1,
       name : "stevan",
       email : "stevan@gmail.com",
       telp : "0812"
     },
     {
+      id : 2,
       name : "patar",
       email : "patar@gmail.com",
       telp : "0812"
@@ -36,7 +40,7 @@ function App() {
   }
 
   function handlerSubmit(){
-    console.log("asd");
+    console.log("idCounter",idCounter);
     let error = false;
     let errorKey = "";
     Object.keys(inputData).forEach(key => {
@@ -51,23 +55,91 @@ function App() {
       alert(`isi data ${errorKey} bro`)
     }else{
       const newData = [...datas,inputData];
-      document.getElementById("contact-list-form").reset();
+      document.getElementById("contact-list-form").reset();    
+      setDatas(newData);
+      setIdCounter(parseInt(idCounter) + 1);
       setInputData({
+        id : idCounter+1,
         name : "",
         email : "",
         telp : ""
       })
-      
-      setDatas(newData);
-      setIdCounter(idCounter + 1);
     }
+  }
 
+  //Update Section
+  const [dataUpdate, setDataUpdate] = useState({
+    id : null,
+    email : null,
+    name : null,
+    telp : null
+  });
+  const [showUpdate, setShowUpdate] = useState(false);
+  const handleCloseUpdate = () => setShowUpdate(false);
+  const handleShowUpdate = (id) => {
+    let updateId = parseInt(id);
+    console.log("updateId",updateId);
+    const data = datas.find(obj => obj.id === updateId);
+    console.log(data);
+    setDataUpdate(data)
+    setShowUpdate(true)
+
+  };
+
+  const handleUpdateChange = (event) => {
+    console.log("Lama", datas)
+    // console.log(event.target.name)
     
+    let formData = {...dataUpdate}
+    
+    console.log("Baru", datas)
+    formData[event.target.name] = event.target.value
+    console.log(formData);
+    
+    setDataUpdate(formData);
+  }
+
+  const handleUpdateSubmit = () => {
+    console.log("run");
+    let newData = datas
+    for(let i=0;i<newData.length;i++){
+      if(newData[i].id == dataUpdate.id){
+        newData[i] = dataUpdate
+        break
+      }
+    }
+      setDatas(newData);
+      setShowUpdate(false)
   }
 
 
 
+  //Delete Section
+  const [dataDelete, setDataDelete] = useState(null);
+  const [showDelete, setShowDelete] = useState(false);
+
+  const handleCloseDelete = () => setShowDelete(false);
+  const handleShowDelete = (id) => {
+    setDataDelete(id)
+    setShowDelete(true)
+  };
+
+  const handleDeleteSubmit = (id) => {
+    console.log("run");
+    let newData = datas
+    for(let i=0;i<newData.length;i++){
+      if(newData[i].id == id){
+        newData.splice(i, 1);
+        break
+      }
+    }
+      setDatas(newData);
+      setShowDelete(false)
+  }
+
+
   return (
+    <>
     <Container>
       <Row>
         <Form id="contact-list-form">
@@ -93,10 +165,22 @@ function App() {
         </Form>
       </Row>
       <Row>
-        <List data={datas}></List>
+        <List data={datas} handlerUpdate={handleShowUpdate} handlerDelete={handleShowDelete}></List>
       </Row>
     </Container>
-
+    <ModalUpdate 
+      isShow={showUpdate} 
+      handleClose={handleCloseUpdate} 
+      data={dataUpdate} 
+      handleChange={handleUpdateChange} 
+      handleSubmit={handleUpdateSubmit}></ModalUpdate>
+    <ModalDelete 
+      isShow={showDelete} 
+      handleClose={handleCloseDelete}
+      handleDelete={handleDeleteSubmit}
+      id={dataDelete} 
+      ></ModalDelete>
+    </>
   );
 }
 

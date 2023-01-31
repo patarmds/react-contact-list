@@ -1,10 +1,12 @@
+import { Button } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
 
 
 
-function List({data}) {
+function List({data, handlerUpdate , handlerDelete}) {
 
   return (
+    <>
     <Table striped bordered hover>
       <thead>
         <tr>
@@ -17,16 +19,17 @@ function List({data}) {
       <tbody>
         {data.map((result, index) => {
             return (<tr>
-                <td>{index}</td>
+                <td>{result.id}</td>
                 <td>{result.name}</td>
                 <td>{result.email}</td>
                 <td>{result.telp}</td>
-                <td><button type="button" dataId={result.id} >Edit</button></td>
-                <td><button type="button" dataId={result.id} >Hapus</button></td>
+                <td><Button variant="primary" data-id={result.id} onClick={() => handlerUpdate(result.id)}>Edit</Button></td>
+                <td><Button variant="danger"  data-id={result.id} onClick={() => handlerDelete(result.id)}>Delete</Button></td>
             </tr>)
         })}
       </tbody>
     </Table>
+    </>
   );
 }
 
