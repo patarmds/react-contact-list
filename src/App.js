@@ -1,32 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Container, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import List from './List';
 import ModalUpdate from './ModalUpdate';
 import ModalDelete from './ModalDelete';
+import { uid } from 'uid';
+import { set, ref, onValue, remove, update } from 'firebase/database';
+import { db } from './firebase';
+
 
 function App() {
   
-  const [idCounter, setIdCounter] = useState(3)
+  // const [idCounter, setIdCounter] = useState(3)
 
-  const [datas, setDatas] = useState([
-    {
-      id : 1,
-      name : "stevan",
-      email : "stevan@gmail.com",
-      telp : "0812"
-    },
-    {
-      id : 2,
-      name : "patar",
-      email : "patar@gmail.com",
-      telp : "0812"
-    },
-  ])
+  const [datas, setDatas] = useState([])
 
+
+  
+
+  //read 
+  useEffect(() => {
+    onValue(ref(db, "contact"), (snapshot) => {
+      setDatas([]);
+      const data = snapshot.val();
+      console.log(`log data : `)
+      console.log(data);
+      if(data !== null){
+        Object.values(data).map((contact) => {
+          setDatas((oldArray) => [...oldArray, contact]);
+        })
+      }
+    })
+  },[]);
+
+  //write
   const [inputData, setInputData] = useState({
-    id : idCounter,
     name : "",
     email : "",
     telp : ""
@@ -40,46 +49,37 @@ function App() {
   }
 
   function handlerSubmit(){
-    console.log("idCounter",idCounter);
-    let error = false;
-    let errorKey = "";
-    Object.keys(inputData).forEach(key => {
-      console.log(key, inputData[key]);
-      if(inputData[key] === ""){
-        error = true
-        errorKey = errorKey + key + ",";
-      }
-    });
-
-    if(error){
-      alert(`isi data ${errorKey} bro`)
-    }else{
-      const newData = [...datas,inputData];
+      // const newData = [...datas,inputData];
+      const uuid = uid();
+      const newData = {
+        uuid,
+        ...inputData
+      };
+      console.log("newData", newData);
+      
+      set(ref(db, `contact/${uuid}`), newData);
       document.getElementById("contact-list-form").reset();    
-      setDatas(newData);
-      setIdCounter(parseInt(idCounter) + 1);
+      // setDatas(newData);
       setInputData({
-        id : idCounter+1,
         name : "",
         email : "",
         telp : ""
       })
-    }
   }
 
   //Update Section
   const [dataUpdate, setDataUpdate] = useState({
-    id : null,
+    uuid : null,
     email : null,
     name : null,
     telp : null
   });
   const [showUpdate, setShowUpdate] = useState(false);
   const handleCloseUpdate = () => setShowUpdate(false);
-  const handleShowUpdate = (id) => {
-    let updateId = parseInt(id);
-    console.log("updateId",updateId);
-    const data = datas.find(obj => obj.id === updateId);
+  const handleShowUpdate = (uuid) => {
+    let updateUuid = uuid;
+    console.log("updateUuid",updateUuid);
+    const data = datas.find(obj => obj.uuid === updateUuid);
     console.log(data);
     setDataUpdate(data)
     setShowUpdate(true)
@@ -101,14 +101,15 @@ function App() {
 
   const handleUpdateSubmit = () => {
     console.log("run");
-    let newData = datas
-    for(let i=0;i<newData.length;i++){
-      if(newData[i].id == dataUpdate.id){
-        newData[i] = dataUpdate
-        break
-      }
-    }
-      setDatas(newData);
+    // let newData = datas
+    // for(let i=0;i<newData.length;i++){
+    //   if(newData[i].uuid == dataUpdate.uuid){
+    //     newData[i] = dataUpdate
+    //     break
+    //   }
+    // }
+    //   setDatas(newData);
+      update(ref(db, `/contact/${dataUpdate.uuid}`), dataUpdate);
       setShowUpdate(false)
   }
 
@@ -119,21 +120,22 @@ function App() {
   const [showDelete, setShowDelete] = useState(false);
 
   const handleCloseDelete = () => setShowDelete(false);
-  const handleShowDelete = (id) => {
-    setDataDelete(id)
+  const handleShowDelete = (uuid) => {
+    setDataDelete(uuid)
     setShowDelete(true)
   };
 
-  const handleDeleteSubmit = (id) => {
+  const handleDeleteSubmit = (uuid) => {
     console.log("run");
-    let newData = datas
-    for(let i=0;i<newData.length;i++){
-      if(newData[i].id == id){
-        newData.splice(i, 1);
-        break
-      }
-    }
-      setDatas(newData);
+    // let newData = datas
+    // for(let i=0;i<newData.length;i++){
+    //   if(newData[i].uuid == uuid){
+    //     newData.splice(i, 1);
+    //     break
+    //   }
+    // }
+    //   setDatas(newData);
+    remove(ref(db, `contact/${uuid}`));
       setShowDelete(false)
   }
 

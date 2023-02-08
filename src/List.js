@@ -18,13 +18,13 @@ function List({data, handlerUpdate , handlerDelete}) {
       </thead>
       <tbody>
         {data.map((result, index) => {
-            return (<tr>
-                <td>{result.id}</td>
+            return (<tr key={result.uuid}>
+                <td>{result.uuid}</td>
                 <td>{result.name}</td>
                 <td>{result.email}</td>
                 <td>{result.telp}</td>
-                <td><Button variant="primary" data-id={result.id} onClick={() => handlerUpdate(result.id)}>Edit</Button></td>
-                <td><Button variant="danger"  data-id={result.id} onClick={() => handlerDelete(result.id)}>Delete</Button></td>
+                <td><Button variant="primary" data-id={result.uuid} onClick={() => handlerUpdate(result.uuid)}>Edit</Button></td>
+                <td><Button variant="danger"  data-id={result.uuid} onClick={() => handlerDelete(result.uuid)}>Delete</Button></td>
             </tr>)
         })}
       </tbody>
